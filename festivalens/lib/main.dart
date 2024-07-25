@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 
 void main() {
   runApp(FestivaLensApp());
@@ -26,105 +26,200 @@ class FestivaLensHomePage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Upcoming Events',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 8),
-            Container(
-              height: 100,
-              color: Colors.redAccent,
-              child: Center(
-                child: Text(
-                  'Event #1\nBlurb about the event will be shown here',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
+            UpcomingEventsSection(),
             SizedBox(height: 16),
-            Text(
-              'Your Tickets',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 8),
-            Container(
-              height: 50,
-              color: Colors.red,
-              child: Center(
-                child: Text(
-                  'Event #2\nBe there 14th May, 8:00PM',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(height: 8),
-            Container(
-              height: 50,
-              color: Colors.orange,
-              child: Center(
-                child: Text(
-                  'Event #3\nBe there 30th December, 9:45AM',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
+            YourTicketsSection(),
             SizedBox(height: 16),
-            Text(
-              'Your Event',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 8),
-            Container(
-              height: 100,
-              color: Colors.amber,
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    'Event #4\nInformation about the event will be here:\nLorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.black,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: List.generate(5, (index) {
-                return Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: index == 0 ? Colors.redAccent : Colors.black54,
-                  ),
-                );
-              }),
-            ),
+            YourEventSection(),
           ],
         ),
       ),
+    );
+  }
+}
+
+
+class UpcomingEventsSection extends StatelessWidget {
+  @override
+  Widget build(BuildContext context){
+    return Container(
+      child: CarouselSlider(
+        items: [1,2,3].map((i) {
+          return Container(
+            width: MediaQuery.of(context).size.width,
+            
+            margin: EdgeInsets.symmetric(horizontal: 5),
+            decoration: BoxDecoration(color: Colors.redAccent,
+            borderRadius: BorderRadius.circular(15)),
+            child: Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Text(
+                "Event #$i", 
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  
+                  )),
+            ),
+           );
+        }).toList(), 
+      options: CarouselOptions(
+        height: 300
+        ), 
+      )
+    );
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* class UpcomingEventsSection extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Upcoming Events',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(height: 8),
+        GestureDetector(
+          onTap: () {
+            showModalBottomSheet<void>(
+              context: context,
+              builder: (BuildContext context) {
+                return FractionallySizedBox(
+                  heightFactor: 2,
+                  widthFactor: 4,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        const Text('Here is some extra information about the event'),
+                       
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+          child: Container(
+            height: 100,
+            color: Colors.redAccent,
+            child: Center(
+              child: Text(
+                'Event #1\nBlurb about the event will be shown here',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+*/
+
+class YourTicketsSection extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Your Tickets',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(height: 8),
+        Container(
+          height: 50,
+          color: Colors.red,
+          child: Center(
+            child: Text(
+              'Event #2\nBe there 14th May, 8:00PM',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+        SizedBox(height: 8),
+        Container(
+          height: 50,
+          color: Colors.orange,
+          child: Center(
+            child: Text(
+              'Event #3\nBe there 30th December, 9:45AM',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class YourEventSection extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Your Event',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(height: 8),
+        Container(
+          height: 100,
+          color: Colors.amber,
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                'Event #4\nInformation about the event will be here:\nLorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.black,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
