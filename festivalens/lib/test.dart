@@ -103,7 +103,8 @@ class UpcomingEventsSection extends StatelessWidget {
           }).toList(),
           options: CarouselOptions(
             height: 150,
-            
+            autoPlay: true,
+            enlargeCenterPage: true,
           ),
         ),
       ],
