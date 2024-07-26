@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'tickets.dart';  
 
 void main() {
   runApp(FestivaLensApp());
@@ -103,7 +104,6 @@ class UpcomingEventsSection extends StatelessWidget {
           }).toList(),
           options: CarouselOptions(
             height: 150,
-            
           ),
         ),
       ],
@@ -112,6 +112,15 @@ class UpcomingEventsSection extends StatelessWidget {
 }
 
 class YourTicketsSection extends StatelessWidget {
+  void _navigateToTicketsPage(BuildContext context, String eventName, String eventDetails) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TicketsPage(eventName: eventName, eventDetails: eventDetails),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -125,29 +134,35 @@ class YourTicketsSection extends StatelessWidget {
           ),
         ),
         SizedBox(height: 8),
-        Container(
-          height: 50,
-          color: Colors.red,
-          child: Center(
-            child: Text(
-              'Event #2\nBe there 14th May, 8:00PM',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white,
+        GestureDetector(
+          onTap: () => _navigateToTicketsPage(context, 'Event #2', 'Be there 14th May, 8:00PM'),
+          child: Container(
+            height: 50,
+            color: Colors.red,
+            child: Center(
+              child: Text(
+                'Event #2\nBe there 14th May, 8:00PM',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white,
+                ),
               ),
             ),
           ),
         ),
         SizedBox(height: 8),
-        Container(
-          height: 50,
-          color: Colors.orange,
-          child: Center(
-            child: Text(
-              'Event #3\nBe there 30th December, 9:45AM',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white,
+        GestureDetector(
+          onTap: () => _navigateToTicketsPage(context, 'Event #3', 'Be there 30th December, 9:45AM'),
+          child: Container(
+            height: 50,
+            color: Colors.orange,
+            child: Center(
+              child: Text(
+                'Event #3\nBe there 30th December, 9:45AM',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white,
+                ),
               ),
             ),
           ),
