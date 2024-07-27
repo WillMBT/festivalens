@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'tickets.dart';  
+import 'secret.dart';  
 
 void main() {
   runApp(FestivaLensApp());
@@ -104,6 +105,8 @@ class UpcomingEventsSection extends StatelessWidget {
           }).toList(),
           options: CarouselOptions(
             height: 150,
+            autoPlay: true,
+            enlargeCenterPage: true,
           ),
         ),
       ],
@@ -172,7 +175,23 @@ class YourTicketsSection extends StatelessWidget {
   }
 }
 
+
 class YourEventSection extends StatelessWidget {
+  void _navigateToSecret(BuildContext context, String eventName, String eventDetails) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SecretPage(eventName: eventName, eventDetails: eventDetails),
+      ),
+    );
+  }
+
+
+
+
+
+
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -185,18 +204,17 @@ class YourEventSection extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-        SizedBox(height: 8),
-        Container(
-          height: 100,
-          color: Colors.amber,
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
+       GestureDetector(
+          onTap: () => _navigateToSecret(context, 'Event #1', 'Here is the information and upload photos here'), // strings allow for easy addition/changing of events
+          child: Container(
+            height: 200,
+            color: Colors.red,
+            child: Center(
               child: Text(
-                'Event #4\nInformation about the event will be here:\nLorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+                'Event #2 \nMore secretive info is held here...',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Colors.black,
+                  color: Colors.white,
                 ),
               ),
             ),

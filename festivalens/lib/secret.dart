@@ -1,11 +1,10 @@
-
 import 'package:flutter/material.dart';
 
-class TicketsPage extends StatelessWidget {
+class SecretPage extends StatelessWidget {
   final String eventName;
   final String eventDetails;
 
-  TicketsPage({required this.eventName, required this.eventDetails});
+  SecretPage({required this.eventName, required this.eventDetails});
 
   @override
   Widget build(BuildContext context) {
