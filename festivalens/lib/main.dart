@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'tickets.dart';  
-import 'secret.dart';  
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'event_details_page.dart';
+import 'all_events_page.dart';
+import 'secret.dart';
+import 'tickets.dart';
+
 
 void main() {
   runApp(FestivaLensApp());
@@ -40,28 +45,49 @@ class FestivaLensHomePage extends StatelessWidget {
   }
 }
 
-class UpcomingEventsSection extends StatelessWidget {
-  void _showModalBottomSheet(BuildContext context, String event) {
-    showModalBottomSheet<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return SizedBox(
-          height: 200,
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Text('Details for $event'),
-                ElevatedButton(
-                  child: const Text('Close BottomSheet'),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+class UpcomingEventsSection extends StatefulWidget {
+  @override
+  _UpcomingEventsSectionState createState() => _UpcomingEventsSectionState();
+}
+
+class _UpcomingEventsSectionState extends State<UpcomingEventsSection> {
+  List<dynamic> _events = [];
+  
+  @override
+  void initState() {
+    super.initState();
+    _fetchEvents();
+  }
+
+  void _fetchEvents() async {
+    final response = await http.get(
+      Uri.parse('https://app.ticketmaster.com/discovery/v2/events.json?classificationName=music&countryCode=NZ&apikey=ytLHZaQDHtMK8EGePOX2GKjj6GiDYdu6'),
+    );
+    
+    if (response.statusCode == 200) {
+      setState(() {
+        _events = json.decode(response.body)['_embedded']['events'];
+      });
+    } else {
+      throw Exception('Failed to load events');
+    }
+  }
+
+  void _navigateToEventDetailsPage(BuildContext context, dynamic event) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EventDetailsPage(event: event),
+      ),
+    );
+  }
+
+  void _navigateToAllEventsPage(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AllEventsPage(),
+      ),
     );
   }
 
@@ -70,45 +96,56 @@ class UpcomingEventsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Upcoming Events',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Upcoming Events',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () => _navigateToAllEventsPage(context),
+              child: Text('See All'),
+            ),
+          ],
         ),
         SizedBox(height: 8),
-        CarouselSlider(
-          items: [1, 2, 3].map((i) {
-            return GestureDetector(
-              onTap: () => _showModalBottomSheet(context, 'Event #$i'),
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                margin: EdgeInsets.symmetric(horizontal: 5.0),
-                decoration: BoxDecoration(
-                  color: Colors.redAccent,
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Text(
-                    "Event #$i",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+        _events.isEmpty
+            ? CircularProgressIndicator()
+            : CarouselSlider(
+                items: _events.map((event) {
+                  return GestureDetector(
+                    onTap: () => _navigateToEventDetailsPage(context, event),
+                    child: Container(
+                      width: MediaQuery.of(context).size.width,
+                      margin: EdgeInsets.symmetric(horizontal: 5.0),
+                      decoration: BoxDecoration(
+                        color: Colors.redAccent,
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: Text(
+                          event['name'],
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                  );
+                }).toList(),
+                options: CarouselOptions(
+                  height: 150,
+                  autoPlay: true,
+                  enlargeCenterPage: true,
                 ),
               ),
-            );
-          }).toList(),
-          options: CarouselOptions(
-            height: 150,
-            autoPlay: true,
-            enlargeCenterPage: true,
-          ),
-        ),
       ],
     );
   }
@@ -175,7 +212,6 @@ class YourTicketsSection extends StatelessWidget {
   }
 }
 
-
 class YourEventSection extends StatelessWidget {
   void _navigateToSecret(BuildContext context, String eventName, String eventDetails) {
     Navigator.push(
@@ -185,12 +221,6 @@ class YourEventSection extends StatelessWidget {
       ),
     );
   }
-
-
-
-
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -204,8 +234,8 @@ class YourEventSection extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-       GestureDetector(
-          onTap: () => _navigateToSecret(context, 'Event #1', 'Here is the information and upload photos here'), // strings allow for easy addition/changing of events
+        GestureDetector(
+          onTap: () => _navigateToSecret(context, 'Event #1', 'Here is the information and upload photos here'),
           child: Container(
             height: 200,
             color: Colors.red,
