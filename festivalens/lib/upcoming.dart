@@ -23,7 +23,7 @@ class _TicketsPageState extends State<TicketsPage> {
   }
 
   Future<void> _fetchEventData() async {
-    final apiKey = 'ytLHZaQDHtMK8EGePOX2GKjj6GiDYdu6'; // Replace with your Ticketmaster API key
+    const apiKey = 'ytLHZaQDHtMK8EGePOX2GKjj6GiDYdu6'; // Replace with your Ticketmaster API key
     final url = Uri.parse('https://app.ticketmaster.com/discovery/v2/events.json?apikey=$apiKey&keyword=${widget.eventName}');
 
     try {

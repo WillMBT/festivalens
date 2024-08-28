@@ -6,7 +6,8 @@ import 'event_details_page.dart';
 import 'all_events_page.dart';
 import 'secret.dart';
 import 'tickets.dart';
-
+import 'ticketdetail.dart';
+import 'map.dart';
 
 void main() {
   runApp(FestivaLensApp());
@@ -21,7 +22,31 @@ class FestivaLensApp extends StatelessWidget {
   }
 }
 
-class FestivaLensHomePage extends StatelessWidget {
+class FestivaLensHomePage extends StatefulWidget {
+  @override
+  _FestivaLensHomePageState createState() => _FestivaLensHomePageState();
+}
+
+class _FestivaLensHomePageState extends State<FestivaLensHomePage> {
+  int _selectedIndex = 0;
+
+  static List<Widget> get _pages => [
+    FestivaLensHomePage(),
+    AllEventsPage(),
+    EventsMapPage(),
+    AllTicketsPage(),
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => _pages[index]),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,12 +59,34 @@ class FestivaLensHomePage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             UpcomingEventsSection(),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             YourTicketsSection(),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             YourEventSection(),
           ],
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.event),
+            label: 'Events',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.map),
+            label: 'Map',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.map),
+            label: 'Tickets',
+          ),
+        ],
       ),
     );
   }
@@ -52,7 +99,7 @@ class UpcomingEventsSection extends StatefulWidget {
 
 class _UpcomingEventsSectionState extends State<UpcomingEventsSection> {
   List<dynamic> _events = [];
-  
+
   @override
   void initState() {
     super.initState();
@@ -63,7 +110,7 @@ class _UpcomingEventsSectionState extends State<UpcomingEventsSection> {
     final response = await http.get(
       Uri.parse('https://app.ticketmaster.com/discovery/v2/events.json?classificationName=music&countryCode=NZ&apikey=ytLHZaQDHtMK8EGePOX2GKjj6GiDYdu6'),
     );
-    
+
     if (response.statusCode == 200) {
       setState(() {
         _events = json.decode(response.body)['_embedded']['events'];
@@ -152,12 +199,22 @@ class _UpcomingEventsSectionState extends State<UpcomingEventsSection> {
 }
 
 class YourTicketsSection extends StatelessWidget {
-  void _navigateToTicketsPage(BuildContext context, String eventName, String eventDetails) {
+  void _navigateToTicketDetail(BuildContext context, String eventName, String eventDetails) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => TicketsPage(eventName: eventName, eventDetails: eventDetails),
+        builder: (context) => TicketDetailPage(
+          eventName: eventName,
+          eventDetails: eventDetails,
+        ),
       ),
+    );
+  }
+
+  void _navigateToAllTicketsPage(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const AllTicketsPage()),
     );
   }
 
@@ -166,20 +223,29 @@ class YourTicketsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Your Tickets',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Your Tickets',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            TextButton(
+              onPressed: () => _navigateToAllTicketsPage(context),
+              child: const Text('See More'),
+            ),
+          ],
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         GestureDetector(
-          onTap: () => _navigateToTicketsPage(context, 'Event #2', 'Be there 14th May, 8:00PM'),
+          onTap: () => _navigateToTicketDetail(context, 'Event #2', 'Be there 14th May, 8:00PM'),
           child: Container(
             height: 50,
             color: Colors.red,
-            child: Center(
+            child: const Center(
               child: Text(
                 'Event #2\nBe there 14th May, 8:00PM',
                 textAlign: TextAlign.center,
@@ -190,13 +256,13 @@ class YourTicketsSection extends StatelessWidget {
             ),
           ),
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         GestureDetector(
-          onTap: () => _navigateToTicketsPage(context, 'Event #3', 'Be there 30th December, 9:45AM'),
+          onTap: () => _navigateToTicketDetail(context, 'Event #3', 'Be there 30th December, 9:45AM'),
           child: Container(
             height: 50,
             color: Colors.orange,
-            child: Center(
+            child: const Center(
               child: Text(
                 'Event #3\nBe there 30th December, 9:45AM',
                 textAlign: TextAlign.center,
