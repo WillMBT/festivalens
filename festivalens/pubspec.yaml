@@ -17,6 +17,8 @@ dependencies:
   carousel_slider: ^5.0.0
   flutter_map: ^7.0.2
   latlong2: ^0.9.1
+  url_launcher: ^6.3.0
+  dio: ^5.7.0
 
 dev_dependencies:
   flutter_test:
