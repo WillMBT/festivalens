@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "391014440478",
+    "project_id": "festivalens-da46f",
+    "storage_bucket": "festivalens-da46f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:391014440478:android:304c9958179ba84fca580f",
+        "android_client_info": {
+          "package_name": "com.example.festivalens"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_sJBYx7psiloOXMptauub5dnAV72nelg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

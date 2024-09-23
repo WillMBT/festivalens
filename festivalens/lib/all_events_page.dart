@@ -3,6 +3,12 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:dio/dio.dart'; 
 import 'event_details_page.dart';
+import 'package:intl/intl.dart';
+import 'homepg.dart';
+import 'profile.dart';
+import 'upload.dart';
+import 'map.dart';
+
 
 class AllEventsPage extends StatefulWidget {
   @override
@@ -11,31 +17,41 @@ class AllEventsPage extends StatefulWidget {
 
 class _AllEventsPageState extends State<AllEventsPage> {
   List<dynamic> _events = [];
-bool _isLoading = true;
+  bool _isLoading = true;
   String _errorMessage = '';
-
+  int _selectedIndex = 0;
+  
   @override
   void initState() {
     super.initState();
     _fetchEvents();
   }
 
-  void _fetchEvents() async {
-    try {
-      final ticketmasterEvents = await _fetchTicketmasterEvents();
-      final moshtixEvents = await _fetchMoshtixEvents();
-      
-      setState(() {
-        _events = [...ticketmasterEvents, ...moshtixEvents];
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'Failed to load events: $e';
-        _isLoading = false;
-      });
-    }
+  static List<Widget> get _pages => [
+    FestivaLensHomePage(),
+    AllEventsPage(),
+    EventsMapPage(),
+    UploaderPage(),
+    ProfilePage(),
+  ];
+
+   void _fetchEvents() async {
+  try {
+    final ticketmasterEvents = await _fetchTicketmasterEvents();
+    final moshtixEvents = await _fetchMoshtixEvents();
+    final eventfindaEvents = await _fetchEventfindaEvents(); // Fetch Eventfinda events
+
+    setState(() {
+      _events = [...ticketmasterEvents, ...moshtixEvents, ...eventfindaEvents]; // Combine all events
+      _isLoading = false;
+    });
+  } catch (e) {
+    setState(() {
+      _errorMessage = 'Failed to load events: $e';
+      _isLoading = false;
+    });
   }
+}
 
   Future<List<dynamic>> _fetchTicketmasterEvents() async {
     try {
@@ -98,13 +114,20 @@ try {
         jsonResponse['data']['viewer']['getEvents'] != null &&
         jsonResponse['data']['viewer']['getEvents']['items'] != null) {
       return jsonResponse['data']['viewer']['getEvents']['items'].map((event) {
-        return {
-          ...event, // Spread the original event data
-          'source': 'moshtix', // Add the source field
-        };
+        DateTime startDate = DateTime.parse(event['startDate']);
+          
+          
+          String formattedDate = DateFormat('EEEE, MMMM d, y').format(startDate);
+          String formattedTime = DateFormat('h:mm a').format(startDate);
+          
+          return {
+            ...event, 
+            'source': 'moshtix', 
+            'formattedStartDate': '$formattedDate at $formattedTime', 
+          };
       }).toList();
     } else {
-      // Print the structure of the response to understand the mismatch
+      
       print('Unexpected response structure from Moshtix API');
       print('Response data: ${jsonResponse}');
       return [];
@@ -123,7 +146,69 @@ try {
   return [];
 }
   }
+
+Future<List<dynamic>> _fetchEventfindaEvents() async {
+  final dio = Dio();
   
+  // Eventfinda API credentials (username:password)
+  final String credentials = 'festivalens:xg222ykmxwkj';
+  
+  // Encode credentials to Base64 for Basic Auth
+  final String encodedCredentials = base64Encode(utf8.encode(credentials));
+  
+  dio.options.headers['Authorization'] = 'Basic $encodedCredentials';
+  
+  try {
+    print('Attempting to fetch Eventfinda events...');
+    final response = await dio.get(
+      'https://api.eventfinda.co.nz/v2/events.json',
+      queryParameters: {
+        'rows': 10, // Specify how many events you want to retrieve
+      },
+      options: Options(
+        validateStatus: (status) => status != null && status < 500,
+      ),
+    );
+    
+    print('Eventfinda API Response Status: ${response.statusCode}');
+    print('Eventfinda API Response Body: ${response.data}');
+
+    if (response.statusCode == 200) {
+      final jsonResponse = response.data;
+      if (jsonResponse['events'] != null) {
+        return jsonResponse['events'].map((event) {
+          DateTime startDate = DateTime.parse(event['datetime_start']);
+          String formattedDate = DateFormat('EEEE, MMMM d, y').format(startDate);
+          String formattedTime = DateFormat('h:mm a').format(startDate);
+          
+          return {
+            ...event,
+            'source': 'eventfinda',
+            'formattedStartDate': '$formattedDate at $formattedTime',
+          };
+        }).toList();
+      } else {
+        return [];
+      }
+    } else {
+      throw DioException(
+        requestOptions: response.requestOptions,
+        response: response,
+        type: DioExceptionType.badResponse,
+        error: 'Failed to load Eventfinda events: ${response.statusCode}',
+      );
+    }
+  } catch (e) {
+    print('Error fetching Eventfinda events: $e');
+    if (e is DioException) {
+      print('DioException type: ${e.type}');
+      print('DioException message: ${e.message}');
+      print('DioException response: ${e.response}');
+    }
+    return [];
+  }
+}
+
   void _navigateToEventDetailsPage(BuildContext context, dynamic event) {
     Navigator.push(
       context,
@@ -133,20 +218,41 @@ try {
     );
   }
 
+
+void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => _pages[index]),
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        title: Text('All Upcoming Events'),
+        iconTheme: IconThemeData(
+    color: Theme.of(context).colorScheme.onSurface, 
+  ),
+        
+        title: Text('All Upcoming Events',
+        style: TextStyle(color: Theme.of(context).colorScheme.onSurface 
+        ),),
+        centerTitle: true,
       ),
       body: _events.isEmpty
           ? Center(child: CircularProgressIndicator())
           : ListView.builder(
+              
               itemCount: _events.length,
               itemBuilder: (context, index) {
                 return ListTile(
-                  title: Text(_events[index]['name']),
-                  subtitle: Text(
+                  title: Text(_events[index]['name'], style: TextStyle(color: Theme.of(context).colorScheme.onSurface),),
+                  subtitle: Text( style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
                   _events[index]['source'] == 'ticketmaster'
                   ? _events[index]['dates']['start']['localDate'] ?? 'No date'
                   : _events[index]['source'] == 'moshtix'
@@ -154,9 +260,47 @@ try {
                   : 'No date',
 ) ,
                   onTap: () => _navigateToEventDetailsPage(context, _events[index]),
+                  
                 );
               },
             ),
+    
+    
+    bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home, color: Theme.of(context).colorScheme.onSurface),
+            label: 'Home',
+            
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.event, color: Theme.of(context).colorScheme.secondary),
+            label: 'Events',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.map, color: Theme.of(context).colorScheme.onSurface),
+            label: 'Map',
+          ),
+          
+          BottomNavigationBarItem(
+            icon: Icon(Icons.file_upload_outlined, color: Theme.of(context).colorScheme.onSurface),
+            label: 'Upload',
+          ),
+          
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person, color: Theme.of(context).colorScheme.onSurface),  
+            label: 'Profile',
+          ),
+          
+        ],
+      ),
+   
+   
+   
     );
   }
 }

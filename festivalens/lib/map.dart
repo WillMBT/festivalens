@@ -3,6 +3,12 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'all_events_page.dart';
+
+import 'homepg.dart';
+import 'upload.dart';
+import 'profile.dart';
+
 
 class EventsMapPage extends StatefulWidget {
   @override
@@ -20,11 +26,31 @@ class _EventsMapPageState extends State<EventsMapPage> {
     _fetchEvents();
   }
 
+  int _selectedIndex = 0;
+  static List<Widget> get _pages => [
+        FestivaLensHomePage(),
+        AllEventsPage(),
+        EventsMapPage(),
+        UploaderPage(),
+        ProfilePage(),
+      ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => _pages[index]),
+    );
+  }
+
   Future<void> _fetchEvents() async {
     final response = await http.get(
-      Uri.parse('https://app.ticketmaster.com/discovery/v2/events.json?classificationName=music&countryCode=NZ&apikey=ytLHZaQDHtMK8EGePOX2GKjj6GiDYdu6'),
+      Uri.parse(
+          'https://app.ticketmaster.com/discovery/v2/events.json?classificationName=music&countryCode=NZ&apikey=ytLHZaQDHtMK8EGePOX2GKjj6GiDYdu6'),
     );
-    
+
     if (response.statusCode == 200) {
       setState(() {
         _events = json.decode(response.body)['_embedded']['events'];
@@ -94,27 +120,126 @@ class _EventsMapPageState extends State<EventsMapPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        title: Text('Events Map'),
+        iconTheme: IconThemeData(
+          color: Theme.of(context).colorScheme.onSurface, //change your color here
+        ),
+        
+        title: Text(
+          'Map',
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+        centerTitle: true,
       ),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : FlutterMap(
-              mapController: _mapController,
-              options: MapOptions(
-                initialCenter: LatLng(-41.2865, 174.7762), // Wellington, NZ
-                initialZoom: 6.0,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(padding: const EdgeInsets.all(8.0)),
+          // Map Section
+          
+        Align(
+  alignment: Alignment.center,
+    child: ClipRRect(
+        borderRadius: BorderRadius.circular(20), // Adjust the radius as needed
+        child: Container(
+          height: MediaQuery.of(context).size.height / 1.55,
+          width: MediaQuery.of(context).size.width / 1.1, // Adjust height as needed
+          child: _isLoading
+              ? Center(child: CircularProgressIndicator())
+              : FlutterMap(
+                  mapController: _mapController,
+                  options: MapOptions(
+                    initialCenter: LatLng(-41.2865, 174.7762), // Wellington, NZ
+                    initialZoom: 6.0,
+                  ),
+                  children: [
+                    TileLayer(
+                      urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                      subdomains: const ['a', 'b', 'c'],
+                    ),
+                    MarkerLayer(
+                      markers: _buildMarkers(),
+                    ),
+                  ],
+                ),
+        ),
+      ),
+        ),
+
+          // Events Section
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              'Events',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
-              children: [
-                TileLayer(
-                  urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                  subdomains: const ['a', 'b', 'c'],
-                ),
-                MarkerLayer(
-                  markers: _buildMarkers(),
-                ),
-              ],
             ),
+          ),
+          Container(
+            height: 100, // Height for events carousel
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: _events.length,
+              itemBuilder: (context, index) {
+                final event = _events[index];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Container(
+                    width: 150,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Center(
+                      child: Text(
+                        event['name'] ?? 'Unnamed Event',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.surface,
+                        )
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+       
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home, color: Theme.of(context).colorScheme.onSurface),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.event, color: Theme.of(context).colorScheme.onSurface),
+            label: 'Events',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.location_on, color: Theme.of(context).colorScheme.secondary),
+            label: 'Map',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.file_upload_outlined, color: Theme.of(context).colorScheme.onSurface),
+            label: 'Upload',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person, color: Theme.of(context).colorScheme.onSurface),
+            label: 'Profile',
+          ),
+        ],
+      ),
     );
   }
 }
