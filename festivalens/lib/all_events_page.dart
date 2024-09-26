@@ -17,9 +17,11 @@ class AllEventsPage extends StatefulWidget {
 
 class _AllEventsPageState extends State<AllEventsPage> {
   List<dynamic> _events = [];
+  List<dynamic> _filteredEvents = []; 
   bool _isLoading = true;
   String _errorMessage = '';
   int _selectedIndex = 0;
+  DateTimeRange? _selectedDateRange;
   
   @override
   void initState() {
@@ -39,11 +41,12 @@ class _AllEventsPageState extends State<AllEventsPage> {
   try {
     final ticketmasterEvents = await _fetchTicketmasterEvents();
     final moshtixEvents = await _fetchMoshtixEvents();
-    final eventfindaEvents = await _fetchEventfindaEvents(); // Fetch Eventfinda events
+    final eventfindaEvents = await _fetchEventfindaEvents(); 
 
-    setState(() {
-      _events = [...ticketmasterEvents, ...moshtixEvents, ...eventfindaEvents]; // Combine all events
-      _isLoading = false;
+     setState(() {
+        _events = [...ticketmasterEvents, ...moshtixEvents, ...eventfindaEvents];
+        _filteredEvents = _events; 
+        _isLoading = false;
     });
   } catch (e) {
     setState(() {
@@ -54,29 +57,36 @@ class _AllEventsPageState extends State<AllEventsPage> {
 }
 
   Future<List<dynamic>> _fetchTicketmasterEvents() async {
-    try {
-      final response = await http.get(
-        Uri.parse('https://app.ticketmaster.com/discovery/v2/events.json?classificationName=music&countryCode=NZ&apikey=ytLHZaQDHtMK8EGePOX2GKjj6GiDYdu6'),
-      );
+  try {
+    final response = await http.get(
+      Uri.parse('https://app.ticketmaster.com/discovery/v2/events.json?classificationName=music&countryCode=NZ&apikey=ytLHZaQDHtMK8EGePOX2GKjj6GiDYdu6'),
+    );
 
-      if (response.statusCode == 200) {
-        final jsonResponse = json.decode(response.body);
-        if (jsonResponse['_embedded'] != null && jsonResponse['_embedded']['events'] != null) {
-          return jsonResponse['_embedded']['events'].map((event) => {
+    if (response.statusCode == 200) {
+      final jsonResponse = json.decode(response.body);
+      if (jsonResponse['_embedded'] != null && jsonResponse['_embedded']['events'] != null) {
+        return jsonResponse['_embedded']['events'].map((event) {
+          DateTime startDate = DateTime.parse(event['dates']['start']['dateTime']);
+          String formattedDate = DateFormat('EEEE, MMMM d, y').format(startDate);
+          String formattedTime = DateFormat('h:mm a').format(startDate);
+          
+          return {
             ...event,
             'source': 'ticketmaster',
-          }).toList();
-        } else {
-          return [];
-        }
+            'formattedStartDate': '$formattedDate at $formattedTime',
+          };
+        }).toList();
       } else {
-        throw Exception('Failed to load Ticketmaster events');
+        return [];
       }
-    } catch (e) {
-      print('Error fetching Ticketmaster events: $e');
-      return [];
+    } else {
+      throw Exception('Failed to load Ticketmaster events');
     }
+  } catch (e) {
+    print('Error fetching Ticketmaster events: $e');
+    return [];
   }
+}
 
   Future<List<dynamic>> _fetchMoshtixEvents() async {
     final dio = Dio();
@@ -150,10 +160,10 @@ try {
 Future<List<dynamic>> _fetchEventfindaEvents() async {
   final dio = Dio();
   
-  // Eventfinda API credentials (username:password)
+
   final String credentials = 'festivalens:xg222ykmxwkj';
   
-  // Encode credentials to Base64 for Basic Auth
+
   final String encodedCredentials = base64Encode(utf8.encode(credentials));
   
   dio.options.headers['Authorization'] = 'Basic $encodedCredentials';
@@ -163,7 +173,7 @@ Future<List<dynamic>> _fetchEventfindaEvents() async {
     final response = await dio.get(
       'https://api.eventfinda.co.nz/v2/events.json',
       queryParameters: {
-        'rows': 10, // Specify how many events you want to retrieve
+        'rows': 10, 
       },
       options: Options(
         validateStatus: (status) => status != null && status < 500,
@@ -208,7 +218,6 @@ Future<List<dynamic>> _fetchEventfindaEvents() async {
     return [];
   }
 }
-
   void _navigateToEventDetailsPage(BuildContext context, dynamic event) {
     Navigator.push(
       context,
@@ -229,6 +238,43 @@ void _onItemTapped(int index) {
     );
   }
 
+    void _eventFilter() {
+    if (_selectedDateRange != null) {
+      setState(() {
+        _filteredEvents = _events.where((event) {
+          DateTime eventDate;
+          if (event['source'] == 'ticketmaster') {
+            eventDate = DateTime.parse(event['dates']['start']['localDate']);
+          } else if (event['source'] == 'moshtix') {
+            eventDate = DateTime.parse(event['startDate']);
+          } else {
+            eventDate = DateTime.parse(event['datetime_start']);
+          }
+         return eventDate.isAtSameMomentAs(_selectedDateRange!.start) ||
+               eventDate.isAtSameMomentAs(_selectedDateRange!.end) ||
+               (eventDate.isAfter(_selectedDateRange!.start) &&
+                eventDate.isBefore(_selectedDateRange!.end.add(Duration(days: 1))));
+        }).toList();
+      });
+    }
+  }
+
+  Future<void> _pickDates() async {
+    DateTimeRange? pickedRange = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2023),
+      lastDate: DateTime(2027),
+    );
+
+    if (pickedRange != null) {
+      setState(() {
+        _selectedDateRange = pickedRange;
+      });
+      _eventFilter();
+    }
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -243,22 +289,34 @@ void _onItemTapped(int index) {
         style: TextStyle(color: Theme.of(context).colorScheme.onSurface 
         ),),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.filter_list, color: Theme.of(context).colorScheme.onSurface),
+            onPressed: _pickDates, 
+          )
+        ],
       ),
-      body: _events.isEmpty
+      body: _isLoading
           ? Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              
-              itemCount: _events.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(_events[index]['name'], style: TextStyle(color: Theme.of(context).colorScheme.onSurface),),
-                  subtitle: Text( style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-                  _events[index]['source'] == 'ticketmaster'
-                  ? _events[index]['dates']['start']['localDate'] ?? 'No date'
-                  : _events[index]['source'] == 'moshtix'
-                  ? _events[index]['startDate'] ?? 'No date'
-                  : 'No date',
-) ,
+          : _filteredEvents.isEmpty
+              ? Center(child: Text('No events found for selected dates'))
+              : ListView.builder(
+                  itemCount: _filteredEvents.length,
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      title: Text(
+                        _filteredEvents[index]['name'],
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                      ),
+                      subtitle: Text(
+                        _filteredEvents[index]['source'] == 'ticketmaster'
+                            ? _filteredEvents[index]['formattedStartDate'] ?? 'No date'
+                            : _filteredEvents[index]['source'] == 'moshtix'
+                                ? _filteredEvents[index]['formattedStartDate'] ?? 'No date'
+                                : _filteredEvents[index]['source'] == 'eventfinda'
+                                    ? _filteredEvents[index]['formattedStartDate'] ?? 'No date'
+                                    : 'No Date'
+),
                   onTap: () => _navigateToEventDetailsPage(context, _events[index]),
                   
                 );

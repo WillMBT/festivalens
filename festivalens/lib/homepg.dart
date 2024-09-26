@@ -11,9 +11,13 @@ import 'all_events_page.dart';
 import 'tickets.dart';
 import 'ticketdetail.dart';
 import 'map.dart';
-
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'theme.dart';
 import 'package:provider/provider.dart';
 import 'theme_notifier.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 
 
 class FestivaLensHomePage extends StatefulWidget {
@@ -33,8 +37,12 @@ class _FestivaLensHomePageState extends State<FestivaLensHomePage> {
     ProfilePage(),
   ];
 
-
-
+    void _navigateToMapPage(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => EventsMapPage()),
+    );
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -81,12 +89,17 @@ class _FestivaLensHomePageState extends State<FestivaLensHomePage> {
           children: [
             UpcomingEventsSection(),
             const SizedBox(height: 16),
-            YourTicketsSection(),
+            MapSection( onTap: () {
+          // Navigate to the map page when tapped
+          _navigateToMapPage(context);
+        },),
             const SizedBox(height: 16),
             YourEventSection(),
           ],
         ),
       ),
+      
+      
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         backgroundColor: Theme.of(context).colorScheme.surface,
@@ -158,6 +171,36 @@ class _UpcomingEventsSectionState extends State<UpcomingEventsSection> {
     });
   }
 }
+
+  void _navigateToEventDetailsPage(BuildContext context, dynamic event) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EventDetailsPage(event: event),
+      ),
+    );
+  }
+
+  void _navigateToAllEventsPage(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AllEventsPage(),
+      ),
+    );
+  }
+
+
+ void _navigateToMapPage(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => EventsMapPage()),
+    );
+  }
+
+
+
+
 
   Future<List<dynamic>> _fetchTicketmasterEvents() async {
     try {
@@ -269,7 +312,7 @@ Future<List<dynamic>> _fetchEventfindaEvents() async {
     final response = await dio.get(
       'https://api.eventfinda.co.nz/v2/events.json',
       queryParameters: {
-        'rows': 10, // Specify how many events you want to retrieve
+        'rows': 10, 
       },
       options: Options(
         validateStatus: (status) => status != null && status < 500,
@@ -315,23 +358,6 @@ Future<List<dynamic>> _fetchEventfindaEvents() async {
   }
 }
 
-  void _navigateToEventDetailsPage(BuildContext context, dynamic event) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => EventDetailsPage(event: event),
-      ),
-    );
-  }
-
-  void _navigateToAllEventsPage(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => AllEventsPage(),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -378,7 +404,8 @@ Future<List<dynamic>> _fetchEventfindaEvents() async {
         ),
         child: Padding(
           padding: const EdgeInsets.all(10.0),
-          child: Column(
+          child: SingleChildScrollView(
+            child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
@@ -401,6 +428,7 @@ Future<List<dynamic>> _fetchEventfindaEvents() async {
                           ),
                       ],
                     ),
+          ),
                   ),
                 ),
               );
@@ -416,114 +444,105 @@ Future<List<dynamic>> _fetchEventfindaEvents() async {
   }
 }
 
-class YourTicketsSection extends StatefulWidget {
-  @override
-  _YourTicketsSectionState createState() => _YourTicketsSectionState();
-}
 
-class _YourTicketsSectionState extends State<YourTicketsSection> {
-  List<dynamic> _events = [];
-  bool _isLoading = true;
 
-  @override
-  void initState() {
-    super.initState();
-    _fetchEvents();
-  }
 
-  void _fetchEvents() async {
-    final response = await http.get(
-      Uri.parse('https://app.ticketmaster.com/discovery/v2/events.json?classificationName=music&countryCode=NZ&size=2&apikey=ytLHZaQDHtMK8EGePOX2GKjj6GiDYdu6'),
-    );
+class MapSection extends StatelessWidget {
+  final VoidCallback onTap;
 
-    if (response.statusCode == 200) {
-      setState(() {
-        _events = json.decode(response.body)['_embedded']['events'];
-        _isLoading = false;
-      });
-    } else {
-      setState(() {
-        _isLoading = false;
-      });
-      throw Exception('Failed to load events');
-    }
-  }
+  const MapSection({Key? key, required this.onTap}) : super(key: key);
 
-  void _navigateToTicketDetail(BuildContext context, dynamic event) {
+  void _navigateToMapPage(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => TicketDetailPage(
-          eventName: event['name'],
-          eventDetails: '${event['dates']['start']['localDate']} at ${event['dates']['start']['localTime']}',
-          ticketmasterUrl: event['url'],
-        ),
-      ),
-    );
-  }
-
-  void _navigateToAllTicketsPage(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const AllTicketsPage()),
+      MaterialPageRoute(builder: (context) => EventsMapPage()),
     );
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
+ Widget build(BuildContext context) {
+   return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'Your Tickets',
+            Text(
+              'Map',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             TextButton(
-              onPressed: () => _navigateToAllTicketsPage(context),
-              child: const Text('See More',
-              ),
+              onPressed: () => _navigateToMapPage(context),
+              child: Text('See More',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,)),
             ),
           ],
         ),
-        const SizedBox(height: 8),
-        _isLoading
-            ? CircularProgressIndicator()
-            : Column(
-                children: _events.map((event) {
-                  return Column(
-                    children: [
-                      GestureDetector(
-                        onTap: () => _navigateToTicketDetail(context, event),
-                        child: Container(
-                          height: 50,
-                          color: Theme.of(context).colorScheme.tertiary,
-                          child: Center(
-                            child: Text(
-                              '${event['name']}\n${event['dates']['start']['localDate']} at ${event['dates']['start']['localTime']}',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.surface,
-                              ),
-                            ),
+      GestureDetector(
+        onTap: () => _navigateToMapPage(context),
+        child: Container(
+          height: 150,
+          width: double.infinity,
+          margin: EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.5),
+                spreadRadius: 2,
+                blurRadius: 5,
+                offset: Offset(0, 3),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(15),
+            child: Stack(
+              children: [
+                FlutterMap(
+                  options: MapOptions(
+                    initialCenter: LatLng(-41.2865, 174.7762), // Wellington, NZ
+                    initialZoom: 5.0,
+                  ),
+                  children: [
+                    TileLayer(
+                      urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                      subdomains: const ['a', 'b', 'c'],
+                    ),
+                    MarkerLayer(
+                      markers: [
+                        Marker(
+                          width: 40.0,
+                          height: 40.0,
+                          point: LatLng(-41.2865, 174.7762),
+                          child: Icon(
+                            Icons.location_on,
+                            color: Colors.red,
+                            size: 40.0,
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                    ],
-                  );
-                }).toList(),
-              ),
-      ],
-    );
-  }
+                      ],
+                    ),
+                  ],
+                ),
+                
+              ],
+            ),
+          ),
+        ),
+      ),
+    ],
+  );
 }
+
+}
+
+
 
 class YourEventSection extends StatelessWidget {
   void _navigateToSecret(BuildContext context) {
@@ -551,8 +570,9 @@ class YourEventSection extends StatelessWidget {
         GestureDetector(
           onTap: () => _navigateToSecret(context),
           child: Container(
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(15), color: Theme.of(context).colorScheme.primary,),
             height: 200,
-             color: Theme.of(context).colorScheme.primary,
+            
             child: Center(
               child: Text(
                 'Share your memories here! We offer photo uploads, so you can share your time at your favourite events, as well as seeing how everyone else enjoyed it too. Click here to upload now',

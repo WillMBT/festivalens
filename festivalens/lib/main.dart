@@ -7,6 +7,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import 'theme.dart';
 import 'theme_notifier.dart';
+import 'profile.dart';
+
+import 'auth_gate.dart';
 
 const clientId = 'AIzaSyATmQwvTbYD4Y_llB9uojbJ8EviqgK5iR8';
 
@@ -15,9 +18,7 @@ void main() async {
  await Firebase.initializeApp(
    options: DefaultFirebaseOptions.currentPlatform,
  );
-
-
- runApp(ChangeNotifierProvider(
+runApp(ChangeNotifierProvider(
       create: (_) => ThemeNotifier(),
       child: MyApp(),)
  
@@ -40,7 +41,13 @@ class MyApp extends StatelessWidget {
           theme: lightTheme,
           darkTheme: darkTheme,
           themeMode: themeNotifier.themeMode,
-          home: FestivaLensHomePage(),
+          home: AuthGate(),
+          
+      routes: {
+        
+        '/profile': (context) => ProfilePage(),  // Define profile page
+        '/sign-in': (context) => AuthGate(),   // Define the sign-in page route
+        },
         );
       },
     );
