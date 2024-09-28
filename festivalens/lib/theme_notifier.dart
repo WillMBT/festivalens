@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+// Notifies other pages when theme is changed from light/dark mode
 class ThemeNotifier with ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.system;
   ThemeMode get themeMode => _themeMode;
@@ -7,3 +8,4 @@ class ThemeNotifier with ChangeNotifier {
     notifyListeners();
   }
 }
+// End of Code

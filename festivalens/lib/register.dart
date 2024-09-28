@@ -1,5 +1,3 @@
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -11,15 +9,16 @@ class RegisterPage extends StatefulWidget {
 }
 
 class RegisterPageState extends State<RegisterPage> {
+ // Define Input text editors
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _success = false;
   String _statusMessage = '';
 
-  // Register method with error handling and validation
+  // Register function
   void _register() async {
     try {
-      // Check if fields are empty
+      // Checks if inputs are empty
       if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
         setState(() {
           _statusMessage = "Email and password cannot be empty.";
@@ -27,14 +26,14 @@ class RegisterPageState extends State<RegisterPage> {
         });
         return;
       }
-
+      // Defines created user
       final User? user = (
         await _auth.createUserWithEmailAndPassword(
           email: _emailController.text,
           password: _passwordController.text,
         )
       ).user;
-
+      // if user is created, say they have successfully registered
       if (user != null) {
         setState(() {
           _success = true;
@@ -42,20 +41,21 @@ class RegisterPageState extends State<RegisterPage> {
         });
         print('User registered successfully: ${user.email}');
       } else {
+        // Otherwise print error message
         setState(() {
           _success = false;
           _statusMessage = "Registration failed.";
         });
       }
     } catch (e) {
-      setState(() {
+      setState(() { // Error Message cont.
         _success = false;
         _statusMessage = 'Registration failed: $e';
       });
       print('Registration failed: $e');
     }
   }
-
+// Building Page
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -81,6 +81,7 @@ class RegisterPageState extends State<RegisterPage> {
               child: Column(
                 children: <Widget>[
                   TextField(
+                    // Calls controller to edit text
                     controller: _emailController,
                     decoration: const InputDecoration(
                       labelText: 'EMAIL',
@@ -96,6 +97,7 @@ class RegisterPageState extends State<RegisterPage> {
                   ),
                   const SizedBox(height: 20,),
                   TextField(
+                    // Calls controller to edit text
                     controller: _passwordController,
                     decoration: const InputDecoration(
                       labelText: 'PASSWORD',
@@ -119,7 +121,7 @@ class RegisterPageState extends State<RegisterPage> {
                       color: Colors.black,
                       elevation: 7,
                       child: GestureDetector(
-                        onTap: _register,
+                        onTap: _register, // Registers when register button pressed
                         child: const Center(
                           child: Text(
                             'SIGNUP',
@@ -154,7 +156,7 @@ class RegisterPageState extends State<RegisterPage> {
                     ],
                   ),
                   const SizedBox(height: 15,),
-                  // Status message showing success or error
+                  // Says if it is success or not
                   Center(
                     child: Text(
                       _statusMessage,
@@ -173,3 +175,4 @@ class RegisterPageState extends State<RegisterPage> {
     );
   }
 }
+// End of code

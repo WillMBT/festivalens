@@ -1,23 +1,26 @@
-import 'package:festvialens/homepg.dart';
+import 'package:festvialens/home.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:firebase_ui_oauth_google/firebase_ui_oauth_google.dart'; 
 import 'package:flutter/material.dart';
-import 'profile.dart';
+
 
 
 class AuthGate extends StatelessWidget {
  const AuthGate({super.key});
-
+// Builds page
  @override
  Widget build(BuildContext context) {
    return StreamBuilder<User?>(
-     stream: FirebaseAuth.instance.authStateChanges(),
+    // Detect authentication state change (logged in or out)
+     stream: FirebaseAuth.instance.authStateChanges(), 
      builder: (context, snapshot) {
        if (!snapshot.hasData) {
          return SignInScreen(
            providers: [
-             EmailAuthProvider(),
+            // Email Login
+             EmailAuthProvider(), 
+             // Google Login
              GoogleProvider(clientId: "391014440478-vmiscpr7km57tsmu6vdec38060eo7gti.apps.googleusercontent.com"), 
            ],
            headerBuilder: (context, constraints, shrinkOffset) {
@@ -25,16 +28,16 @@ class AuthGate extends StatelessWidget {
                padding: const EdgeInsets.all(20),
                child: AspectRatio(
                  aspectRatio: 1,
-                 child: Image.asset('flutterfire_300x.png'),
+                 
                ),
              );
            },
            subtitleBuilder: (context, action) {
              return Padding(
                padding: const EdgeInsets.symmetric(vertical: 8.0),
-               child: action == AuthAction.signIn
-                   ? const Text('Welcome to FlutterFire, please sign in!')
-                   : const Text('Welcome to Flutterfire, please sign up!'),
+               child: action == AuthAction.signIn // Calls sign in action from firebase
+                   ? const Text('Welcome to FestivaLens please sign in!')
+                   : const Text('Welcome to FestivaLens, please sign up!'),
              );
            },
            footerBuilder: (context, action) {
@@ -51,14 +54,14 @@ class AuthGate extends StatelessWidget {
                padding: const EdgeInsets.all(20),
                child: AspectRatio(
                  aspectRatio: 1,
-                 child: Image.asset('flutterfire_300x.png'),
+                 
                ),
              );
            },
          );
        }
 
-       return FestivaLensHomePage();
+       return FestivaLensHomePage(); // Goes to home page on login
      },
    );
  }

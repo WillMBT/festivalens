@@ -4,7 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'homepg.dart';
+import 'home.dart';
 import 'all_events_page.dart';
 import 'map.dart';
 import 'profile.dart';
@@ -17,19 +17,20 @@ class UploaderPage extends StatefulWidget {
 
 
 class _UploaderPageState extends State<UploaderPage> {
+// Defines
 File? _imageFile;
 String? _downloadURL;
 List<String> _imageUrls = [];
 List<dynamic> _events = [];
 String? _selectedEventId;
 int _selectedIndex = 0;
-
+// Updates states
 @override
   void initState() {
     super.initState();
     _fetchTicketmasterEvents();
   }
-
+// Defines pages for navbar
 static List<Widget> get _pages => [
     FestivaLensHomePage(),
     AllEventsPage(),
@@ -37,7 +38,7 @@ static List<Widget> get _pages => [
     UploaderPage(),
     ProfilePage(),
   ];
-
+// Function for working navbar
 void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -47,13 +48,7 @@ void _onItemTapped(int index) {
       MaterialPageRoute(builder: (context) => _pages[index]),
     );
   }
-
- 
-
-
-
-  
-
+// Fetches ticketmaster events (only ticketmaster available currently)
 Future<List<dynamic>> _fetchTicketmasterEvents() async {
     try {
       final response = await http.get(
@@ -82,7 +77,7 @@ Future<List<dynamic>> _fetchTicketmasterEvents() async {
 
 
 
-
+// Picks image to upload
 Future<void> _pickImage() async {
 
   final pickedFile = await ImagePicker()
@@ -91,7 +86,7 @@ Future<void> _pickImage() async {
     _imageFile = File(pickedFile!.path);
   });
 }
-
+// Uploads Image
 Future<void> _uploadImage() async {
     if (_imageFile == null || _selectedEventId == null) return;
 
@@ -103,12 +98,12 @@ Future<void> _uploadImage() async {
     final url = await storageRef.getDownloadURL();
   
   setState(() {
-    _downloadURL = url; //stores URL in database & to display image
+    _downloadURL = url; //stores URL in database & to displays image
 
   });
    _loadImagesFromFirebase(_selectedEventId!);
 }
- 
+ // Displays images at hte bottom
  Future<void> _loadImagesFromFirebase(String eventId) async {
     final ListResult result = await FirebaseStorage.instance.ref('event_images/$eventId').listAll();
     final List<String> urls = [];
@@ -123,11 +118,8 @@ Future<void> _uploadImage() async {
     });
   }
 
-
-
-
-
-   @override
+// Building of page
+ @override
   Widget build(BuildContext context) {
     
     return Scaffold(
@@ -160,30 +152,30 @@ Future<void> _uploadImage() async {
     return Container(
       color: Theme.of(context).colorScheme.surface,
       child: DropdownButton<String>(
-        
+        // Dropdown to select events
         hint: Text(
           'Select an event',
           style: TextStyle(color: Theme.of(context).colorScheme.onSurface), 
         ),
-        value: _selectedEventId,
+        value: _selectedEventId, // gathered from API
         isExpanded: true,
         dropdownColor: Theme.of(context).colorScheme.surface,
         style: TextStyle(color: Theme.of(context).colorScheme.onSurface), 
         items: _events.map<DropdownMenuItem<String>>((event) {
           return DropdownMenuItem<String>(
             
-            value: event['id'],
+            value: event['id'], // From API, creates folder for event
             child: Text(
-              event['name'],
+              event['name'], // From API
               overflow: TextOverflow.ellipsis,
               maxLines: 1,
             ),
           );
-        }).toList(),
+        }).toList(), // 
         onChanged: (value) {
           setState(() {
             _selectedEventId = value;
-            _loadImagesFromFirebase(_selectedEventId!);
+            _loadImagesFromFirebase(_selectedEventId!); // Displays images at bottom
           });
         },
       ),
@@ -208,14 +200,15 @@ Future<void> _uploadImage() async {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                 ElevatedButton(
-                  onPressed: _pickImage, child: Text("Choose Image",
+                  onPressed: _pickImage, child: Text("Choose Image", // Calls pick image
                   style: TextStyle(color: Theme.of(context).colorScheme.surface),),
                   style: ElevatedButton.styleFrom(
                      backgroundColor: Theme.of(context).colorScheme.secondary,
             ),),
                 SizedBox(width: 50,),
+
                  ElevatedButton(
-                  onPressed: _pickImage, child: Text("Upload Image",
+                  onPressed: _uploadImage, child: Text("Upload Image", // Call Upload Image
                   style: TextStyle(color: Theme.of(context).colorScheme.surface),),
                   style: ElevatedButton.styleFrom(
                      backgroundColor: Theme.of(context).colorScheme.tertiary,
@@ -242,6 +235,7 @@ Future<void> _uploadImage() async {
                         ),
                         itemCount: _imageUrls.length,
                         itemBuilder: (context, index) {
+                          // Displays Images
                           return Image.network(_imageUrls[index], fit: BoxFit.cover);
                         },
                       )
@@ -251,7 +245,7 @@ Future<void> _uploadImage() async {
           ),
         ),
       ),
-
+//Navbar
 bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         

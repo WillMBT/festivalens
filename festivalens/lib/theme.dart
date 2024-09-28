@@ -1,19 +1,20 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart'; 
 
-final darkcolor1 = Color(0xff2B2D42);  // Dark Color
-final darkcolor2 = Color(0xffF7EBEC);  // Light Color
-final darkcolor3 = Color(0xffDDBDD5);  // Accent Color
-final darkcolor4 = Color(0xff7FD1B9);  // Secondary Accent Color
-final darkcolor5 = Color(0xffFAB378);  // Additional Accent Color
+// Defines Colour variables
+final darkcolor1 = Color(0xff2B2D42);  // Background
+final darkcolor2 = Color(0xffF7EBEC);  // On Background
+final darkcolor3 = Color(0xffDDBDD5);  // Primary
+final darkcolor4 = Color(0xff7FD1B9);  // Secondary
+final darkcolor5 = Color(0xffFAB378);  // Tertiary
 
-final lightcolor1 = Color(0xF5F5F5F5);  // Light Color
-final lightcolor2 = Color(0xff333333);  // Dark Color
-final lightcolor3 = Color(0xff7B68EE);  // Accent Color
-final lightcolor4 = Color(0xff48D1CC);  // Secondary Accent Color
-final lightcolor5 = Color(0xffFF8C00);  // Additional Accent Color
+final lightcolor1 = Color(0xF5F5F5F5);  // Background
+final lightcolor2 = Color(0xff333333);  // On Background
+final lightcolor3 = Color(0xff7B68EE);  // Primary
+final lightcolor4 = Color(0xff48D1CC);  // Secondary 
+final lightcolor5 = Color(0xffFF8C00);  // Tertiary
 
 
-
+// Defines themes per light/dark mode
 final ThemeData darkTheme = ThemeData(
   brightness: Brightness.dark,
   colorScheme: ColorScheme.dark(
@@ -29,7 +30,7 @@ final ThemeData darkTheme = ThemeData(
 final ThemeData lightTheme = ThemeData(
   brightness: Brightness.light,
   colorScheme: ColorScheme.light(
-  surface: lightcolor,
+  surface: lightcolor1,
   onSurface: lightcolor2,
   primary: lightcolor3,
   secondary: lightcolor4,

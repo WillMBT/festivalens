@@ -8,7 +8,8 @@ class EventDetailsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: AppBar( 
+        // Event name as screen title in AppBar
         title: Text(event['name']),
       ),
       body: Padding(
@@ -17,6 +18,7 @@ class EventDetailsPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
+              // Title in main screen section
               event['name'],
               style: TextStyle(
                 fontSize: 24,
@@ -25,14 +27,24 @@ class EventDetailsPage extends StatelessWidget {
             ),
             SizedBox(height: 16),
             Text(
-              event['dates']['start']['localDate'],
+              // Displays date
+              event['formattedStartDate'],
               style: TextStyle(
                 fontSize: 18,
               ),
             ),
             SizedBox(height: 16),
             Text(
+              // Any additional info about event
               event['info'] ?? 'No additional information available.',
+              
+              style: TextStyle(
+                fontSize: 16,
+              ),
+            ),
+             Text(
+              // Links to more info and tickets
+              event['url'] ?? 'No url available',
               style: TextStyle(
                 fontSize: 16,
               ),
@@ -43,3 +55,4 @@ class EventDetailsPage extends StatelessWidget {
     );
   }
 }
+// End of Code
