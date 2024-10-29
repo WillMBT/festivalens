@@ -63,7 +63,7 @@ class _AllEventsPageState extends State<AllEventsPage> {
   try {
     final response = await http.get(
       // API Call
-      Uri.parse('https://app.ticketmaster.com/discovery/v2/events.json?classificationName=music&countryCode=NZ&apikey=ytLHZaQDHtMK8EGePOX2GKjj6GiDYdu6'),
+      Uri.parse('https://app.ticketmaster.com/discovery-feed/v2/events.json?classificationName=music&countryCode=NZ&apikey=ytLHZaQDHtMK8EGePOX2GKjj6GiDYdu6'),
     );
     // If successful response, decode
     if (response.statusCode == 200) {
