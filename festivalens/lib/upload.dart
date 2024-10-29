@@ -52,7 +52,7 @@ void _onItemTapped(int index) {
 Future<List<dynamic>> _fetchTicketmasterEvents() async {
     try {
       final response = await http.get(
-        Uri.parse('https://app.ticketmaster.com/discovery/v2/events.json?classificationName=music&countryCode=NZ&apikey=ytLHZaQDHtMK8EGePOX2GKjj6GiDYdu6'),
+        Uri.parse('https://app.ticketmaster.com/discovery-feed/v2/events.json?classificationName=music&countryCode=NZ&apikey=ytLHZaQDHtMK8EGePOX2GKjj6GiDYdu6'),
       );
 
        if (response.statusCode == 200) {
