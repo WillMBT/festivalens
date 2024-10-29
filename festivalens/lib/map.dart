@@ -48,7 +48,7 @@ class _EventsMapPageState extends State<EventsMapPage> {
   Future<void> _fetchEvents() async {
     final response = await http.get(
       Uri.parse(
-          'https://app.ticketmaster.com/discovery/v2/events.json?classificationName=music&countryCode=NZ&apikey=ytLHZaQDHtMK8EGePOX2GKjj6GiDYdu6'),
+          'https://app.ticketmaster.com/discovery-feed/v2/events.json?classificationName=music&countryCode=NZ&apikey=ytLHZaQDHtMK8EGePOX2GKjj6GiDYdu6'),
     );
 // If successful response, get venue info
     if (response.statusCode == 200) {
