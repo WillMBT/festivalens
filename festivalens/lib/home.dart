@@ -197,7 +197,7 @@ class _UpcomingEventsSectionState extends State<UpcomingEventsSection> {
     try {
       // http API call
       final response = await http.get(
-        Uri.parse('https://app.ticketmaster.com/discovery/v2/events.json?classificationName=music&countryCode=NZ&apikey=ytLHZaQDHtMK8EGePOX2GKjj6GiDYdu6'),
+        Uri.parse('https://app.ticketmaster.com/discovery-feed/v2/events.json?classificationName=music&countryCode=NZ&apikey=ytLHZaQDHtMK8EGePOX2GKjj6GiDYdu6'),
       );
       // If rsponse received, decode into events
       if (response.statusCode == 200) {
